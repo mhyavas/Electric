@@ -1,0 +1,69 @@
+{:paths ["src"
+         "src-legacy" ; compat, deprecated
+         "resources"] ; to serve static assets
+ :deps  {com.cognitect/transit-clj      {:mvn/version "1.0.329"}
+         com.cognitect/transit-cljs     {:mvn/version "0.8.269"}
+         com.hyperfiddle/rcf            {:mvn/version "20220926-202227"}
+         datascript/datascript          {:mvn/version "1.3.14"}
+         com.datomic/peer               {:mvn/version "1.0.6733"}
+         missionary/missionary          {:mvn/version "b.28"}
+         org.clojure/clojure            {:mvn/version "1.11.1"}
+         org.clojure/clojurescript      {:mvn/version "1.11.60"}
+         org.clojure/tools.analyzer.jvm {:mvn/version "1.2.2"} ;; used by Electric
+         org.clojure/tools.logging      {:mvn/version "1.2.4"}
+         }
+
+ :aliases {:dev  {:extra-paths ["src-dev" "src-docs" "test" "scratch"] ; for clj command
+                  :extra-deps  {binaryage/devtools                                  {:mvn/version "1.0.6"} ; for chrome devtools pretty printing
+                                thheller/shadow-cljs                                {:mvn/version "2.22.10"}
+                                reagent/reagent                                     {:mvn/version "1.1.1"} ; for reagent interop demo
+                                ch.qos.logback/logback-classic                      {:mvn/version "1.2.11"} ; logging implementation
+                                info.sunng/ring-jetty9-adapter                      {:mvn/version "0.14.3"
+                                                                                     ;; "0.14.3" (Jetty 9) is Java 8 compatible;
+                                                                                     ;; "0.17.7" (Jetty 10) is NOT Java 8 compatible
+                                                                                     :exclusions  [org.slf4j/slf4j-api
+                                                                                                   info.sunng/ring-jetty9-adapter-http3]} ; no need
+                                ring-basic-authentication/ring-basic-authentication {:mvn/version "1.1.1"}
+                                }
+                  :jvm-opts    ["-Xss2m"                 ; https://github.com/hyperfiddle/electric/issues/11
+                                "-XX:-OmitStackTraceInFastThrow" ;; RCF
+                                ]}
+           :test {:extra-paths [#_"src-dev" "test"]
+                  :jvm-opts    ["-Dhyperfiddle.rcf.generate-tests=true"
+                                "-XX:-OmitStackTraceInFastThrow" ;; https://archive.md/NNt9r
+                                ]
+                  :extra-deps  {org.clojure/core.async               {:mvn/version "1.5.648"} ; for interop helpers only
+                                ch.qos.logback/logback-classic       {:mvn/version "1.2.11"}
+                                io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                                      :sha     "cc75980b43011773162b485f46f939dc5fba91e4"}}
+                  :exec-fn     cognitect.test-runner.api/test}
+
+
+           :build        {:extra-paths ["src-build"]
+                          :ns-default  build
+                          :extra-deps  {io.github.clojure/tools.build    {:git/tag "v0.8.2" :git/sha "ba1a2bf"}
+                                        io.github.seancorfield/build-clj {:git/tag "v0.8.0" :git/sha "9bd8b8a"}}}
+           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.22.10"}}
+                          :main-opts  ["-m" "shadow.cljs.devtools.cli"]
+                          :jvm-opts   ["-Xss2m"]}
+           :prod         {:extra-paths ["src-prod" "src-docs"]
+                          :extra-deps  {ch.qos.logback/logback-classic                      {:mvn/version "1.2.11"} ; logging implementation
+                                        info.sunng/ring-jetty9-adapter                      {:mvn/version "0.14.3"
+                                                                                             ;; "0.14.3" (Jetty 9) is Java 8 compatible;
+                                                                                             ;; "0.17.7" (Jetty 10) is NOT Java 8 compatible
+                                                                                             :exclusions  [org.slf4j/slf4j-api
+                                                                                                           info.sunng/ring-jetty9-adapter-http3]} ; no need
+                                        ring-basic-authentication/ring-basic-authentication {:mvn/version "1.1.1"}
+                                        }}
+           :scratch      {:extra-deps {com.datomic/dev-local  {:mvn/version "1.0.243"}
+                                       com.google.guava/guava {:mvn/version "31.1-jre"}}} ; fix conflict - datomic cloud & shadow
+           :datomic-free {:extra-deps {com.datomic/datomic-free {:mvn/version "0.9.5656" :exclusions [org.slf4j/slf4j-nop com.google.guava/guava]}}}
+           :datomic-pro  {:extra-deps {com.datomic/datomic-pro {:mvn/version "1.0.6527" :exclusions [org.slf4j/slf4j-nop]}}}
+
+           :profile {:extra-deps {criterium/criterium                      {:mvn/version "0.4.6"}
+                                  com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.0.2"}}
+                     :jvm-opts   ["-Djdk.attach.allowAttachSelf"
+                                  "-XX:+UnlockDiagnosticVMOptions"
+                                  "-XX:+DebugNonSafepoints"]}}
+
+ :mvn/repos {"my.datomic.com" {:url "https://my.datomic.com/repo"}}}

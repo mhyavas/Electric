@@ -1,0 +1,163 @@
+name: hyperfiddle/electric
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+jobs:
+  jvm:
+    name: Run JVM tests
+    runs-on: [ubuntu-latest]
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v3
+
+    - run: git status
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Cache local Maven repository
+      uses: actions/cache@v3
+      with:
+         path: ~/.m2/repository
+         key: ${{ runner.os }}-maven-${{ hashFiles('**/deps.edn') }}
+         restore-keys: |
+           ${{ runner.os }}-maven-
+
+    - name: Install clojure tools
+      uses: DeLaGuardo/setup-clojure@10.2
+      with:
+        cli: 1.11.1.1113
+
+    - name: Run tests
+      run: ./ci/run_tests_jvm.sh
+
+  browser:
+    name: Run browser tests
+    runs-on: [ubuntu-latest]
+    timeout-minutes: 5
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - run: git status
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Cache local Maven repository
+      uses: actions/cache@v3
+      with:
+         path: ~/.m2/repository
+         key: ${{ runner.os }}-maven-${{ hashFiles('**/deps.edn') }}
+         restore-keys: |
+           ${{ runner.os }}-maven-
+
+    - name: Install clojure tools
+      uses: DeLaGuardo/setup-clojure@10.2
+      with:
+        cli: 1.11.1.1113
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+
+    - name: NPM install
+      run: npm install --include=dev
+
+    # Install chrome and dependencies, puppeteer fails otherwise
+    - run: sudo apt-get update && sudo apt-get install -y wget gnupg
+    - run: wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+    - run: sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+    - run: sudo apt-get update && sudo apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 --no-install-recommends
+    # - run: rm -rf /var/lib/apt/lists/*
+
+
+    - name: Run Tests
+      run: ./ci/run_tests_browser.sh
+
+  nodejs:
+    name: Run NodeJS tests
+    runs-on: [ubuntu-latest]
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v3
+
+    - run: git status
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Cache local Maven repository
+      uses: actions/cache@v3
+      with:
+         path: ~/.m2/repository
+         key: ${{ runner.os }}-maven-${{ hashFiles('**/deps.edn') }}
+         restore-keys: |
+           ${{ runner.os }}-maven-
+
+    - name: Install clojure tools
+      uses: DeLaGuardo/setup-clojure@10.2
+      with:
+        cli: 1.11.1.1113
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+
+    - name: NPM install
+      run: npm install
+
+    - name: Run Tests
+      run: ./ci/run_tests_node.sh
+
+  docker_build:
+    needs: [jvm, browser]
+    if: success()
+    runs-on: ubuntu-latest
+    name: Build and push Docker image
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set Environment Variables
+        run: echo "HYPERFIDDLE_ELECTRIC_SERVER_VERSION=$(git describe --tags --long --always --dirty)" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl auth docker
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: registry.fly.io/electric-demo:latest
+          build-args: |
+            HYPERFIDDLE_ELECTRIC_SERVER_VERSION=${{ env.HYPERFIDDLE_ELECTRIC_SERVER_VERSION }}
+
+  deploy:
+    needs: [docker_build]
+    if: success() && github.ref == 'refs/heads/master'
+    name: Deploy Docker image to Fly.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --image registry.fly.io/electric-demo:latest
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+
