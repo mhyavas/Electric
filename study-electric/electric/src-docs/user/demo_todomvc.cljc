@@ -28,14 +28,14 @@
 #?(:clj (defonce !db (atom nil)))
 #?(:clj (defonce !taker nil))
 #?(:clj (defn init-conn [schema]
-          (let [uri "datomic:mem://todomvc"]
-            (d/delete-database uri)
-            (d/create-database uri)
-            (let [conn (d/connect uri)]
-              (d/transact conn schema)
-              (when !taker (!taker))
-              (alter-var-root #'!taker (fn [_] ((m/reduce #(reset! !db %2) nil (next-db< conn)) identity identity)))
-              conn))))
+              (let [uri "datomic:mem://todomvc"]
+                (d/delete-database uri)
+                (d/create-database uri)
+                (let [conn (d/connect uri)]
+                  (d/transact conn schema)
+                  (when !taker (!taker))
+                  (alter-var-root #'!taker (fn [_] ((m/reduce #(reset! !db %2) nil (next-db< conn)) identity identity)))
+                  conn))))
 
 ;; Application
 #?(:clj
@@ -221,5 +221,5 @@
   (query-todos @!conn :all)
   (query-todos @!conn :active)
   (query-todos @!conn :done)
-  (d/q '[:find (count ?e) . :where [?e :task/status]] @!conn)
-  )
+  (d/q '[:find (count ?e) . :where [?e :task/status]] @!conn))
+

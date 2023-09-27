@@ -40,11 +40,11 @@
                                :color            :white
                                :background-color (format-rgb color)
                                :width            "100px"
-                               :height           "100%"}})
-
+                               :height           "100%"
+                               }})
     (dom/text "Contrast")))
 
-(e/defn App []
+(e/defn Color []
   (e/client
     (let [[self h s l] router/route
           h (or h 180)
@@ -63,7 +63,7 @@
                                :max   100
                                :step  1
                                :value l})
-          (dom/event "input" (fn [^js e] (swap-route! assoc-vec 3 (js/parseInt (.. e -target -value))))))
+          (dom/on! "input" (fn [^js e] (swap-route! assoc-vec 3 (js/parseInt (.. e -target -value))))))
         (dom/p (dom/text l "%"))
 
         (dom/p (dom/text "Saturation"))
@@ -72,7 +72,7 @@
                                :max   100
                                :step  1
                                :value s})
-          (dom/event "input" (fn [^js e] (swap-route! assoc-vec 2 (js/parseInt (.. e -target -value))))))
+          (dom/on! "input" (fn [^js e] (swap-route! assoc-vec 2 (js/parseInt (.. e -target -value))))))
         (dom/p (dom/text s "%"))
 
 
@@ -82,15 +82,15 @@
                                :max   360
                                :step  1
                                :value h})
-          (dom/event "input" (fn [^js e] (swap-route! assoc-vec 1 (js/parseInt (.. e -target -value))))))
+          (dom/on! "input" (fn [^js e] (swap-route! assoc-vec 1 (js/parseInt (.. e -target -value))))))
         (dom/p (dom/text h "°"))
 
 
         (dom/p (dom/text "HSL"))
         (dom/canvas (dom/props {:width  360
                                 :height 100})
-          (draw-gradient! dom/node h (fn [h] (c/hsl->rgb [h s l]))))
-
+          (draw-gradient! dom/node h (fn [h] (c/hsl->rgb [h s l])))
+          )
         (Tile. (c/hsl->rgb [h s l]))
 
         (dom/p (dom/text "OKLCH"))

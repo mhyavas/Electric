@@ -1,5 +1,6 @@
 {:paths ["src" "resources"]
- :deps {com.hyperfiddle/electric {:mvn/version "v2-alpha-284-g0bc5f4bc"}
+ :deps {com.datomic/client-api {:mvn/version "1.0.58"}
+        com.hyperfiddle/electric {:mvn/version "v2-alpha-284-g0bc5f4bc"}
         com.hyperfiddle/rcf {:mvn/version "20220926-202227"}
         info.sunng/ring-jetty9-adapter
         {:mvn/version "0.14.3" ; (Jetty 9) is Java 8 compatible;
@@ -10,14 +11,21 @@
         org.clojure/tools.logging {:mvn/version "1.2.4"}
         ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
         ring-basic-authentication/ring-basic-authentication {:mvn/version "1.1.1"}}
+ :mvn/repos {"my.datomic.com" {:url "https://my.datomic.com/repo"}
+             "cognitect-dev-tools"
+             {:url "https://dev-tools.cognitect.com/maven/releases/"}}
+
  :aliases {:dev
            {:extra-deps
             {binaryage/devtools {:mvn/version "1.0.6"}
+             ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
+             com.datomic/dev-local {:mvn/version "1.0.243"}
+             com.google.guava/guava {:mvn/version "31.1-jre"} ; fix conflict - datomic cloud & shadow
              thheller/shadow-cljs {:mvn/version "2.20.1"}}
             :jvm-opts
             ["-Xss2m" ; https://github.com/hyperfiddle/photon/issues/11
-             "-XX:-OmitStackTraceInFastThrow" ;; RCF
-             ]
+             "-XX:-OmitStackTraceInFastThrow"] ;; RCF
+
             :exec-fn user/main
             :exec-args {}}
            :build

@@ -120,6 +120,6 @@
 
 (defn nav! [db e a] (let [v (get (d/entity db e) a)]
                       (prn "nav! datiomic - " e a v)
-                      v) )
+                      v))
 
 (defn schema [db a] (when (qualified-keyword? a) (d/entity db a)))

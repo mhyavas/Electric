@@ -7,6 +7,7 @@
             [hyperfiddle.history :as history]
             [user.demo-index :as demos]
 
+            user.demo-student
             user.demo-two-clocks
             user.demo-toggle
             user.demo-system-properties
@@ -41,8 +42,8 @@
             ; these demos require extra deps alias
             #_wip.dennis-exception-leak
             #_wip.demo-stage-ui4
-            #_wip.datomic-browser
-            ))
+            #_wip.datomic-browser))
+
 
 (e/defn NotFoundPage []
   (e/client (dom/h1 (dom/text "Page not found"))))
@@ -78,6 +79,7 @@
       `user.demo-svg/SVG user.demo-svg/SVG
       `user.tutorial-blinker/Blinker user.tutorial-blinker/Blinker
       `wip.tracing/TracingDemo wip.tracing/TracingDemo
+      `user.demo-student/TodoMVC user.demo-student/TodoMVC
       ;`user.demo-reagent-interop/ReagentInterop (when react-available user.demo-reagent-interop/ReagentInterop)
       ;::demos/dennis-exception-leak wip.dennis-exception-leak/App2
       ;`wip.demo-stage-ui4/CrudForm wip.demo-stage-ui4/CrudForm

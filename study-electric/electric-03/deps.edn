@@ -1,6 +1,9 @@
 {:paths ["src" "resources"]
  :deps {com.hyperfiddle/electric {:mvn/version "v2-alpha-338-geec2f3df"}
         com.hyperfiddle/rcf {:mvn/version "20220926-202227"}
+        com.datomic/peer               {:mvn/version "1.0.6733"}
+        com.datomic/dev-local {:mvn/version "1.0.243"}
+
         info.sunng/ring-jetty9-adapter
         {:mvn/version "0.14.3" ; (Jetty 9) is Java 8 compatible;
          ;:mvn/version "0.17.7" ; (Jetty 10) is NOT Java 8 compatible
@@ -16,8 +19,8 @@
              thheller/shadow-cljs {:mvn/version "2.20.1"}}
             :jvm-opts
             ["-Xss2m" ; https://github.com/hyperfiddle/photon/issues/11
-             "-XX:-OmitStackTraceInFastThrow" ;; RCF
-             ]
+             "-XX:-OmitStackTraceInFastThrow"] ;; RCF
+
             :exec-fn user/main
             :exec-args {}}
            :build
@@ -26,4 +29,8 @@
             :extra-deps {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}
                          io.github.seancorfield/build-clj {:git/tag "v0.8.0" :git/sha "9bd8b8a"}
                          thheller/shadow-cljs {:mvn/version "2.20.1"}}
-            :jvm-opts ["-Xss2m"]}}}
+            :jvm-opts ["-Xss2m"]}}
+ :mvn/repos {"cognitect-dev-tools"
+             {:url "https://dev-tools.cognitect.com/maven/releases/"}}}
+
+
